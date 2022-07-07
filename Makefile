@@ -3,7 +3,7 @@ APPVERSION := latest
 GOVERSION := 1.15
 PROGRAM := pg_tileserv
 CONFIG := config/$(PROGRAM).toml
-CONTAINER := pramsey/$(PROGRAM)
+CONTAINER := dimozone/$(PROGRAM)
 
 RM = /bin/rm
 CP = /bin/cp
