@@ -22,8 +22,8 @@ jobs:
 
     - name: Docker Upload
       env:
-        DOCKER_USER: ${{ secrets.DOCKER_USER }}
-        DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+        DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
         DOCKER_REPO: dimozone/pg_tileserv
       run: |
         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
