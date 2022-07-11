@@ -1,3 +1,4 @@
+name: buildpushdev
 on:
   push:
     branches:
@@ -5,26 +6,43 @@ on:
 
 jobs:
   docker:
-    name: Docker
-    runs-on: ubuntu-latest
+    name: Docker build push to dev
+    runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.16.x
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.16.x
 
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Build
+        run: make build
 
-    - name: Build
-      run: make build && make build-docker
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Docker Upload
-      env:
-        DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
-        DOCKER_REPO: dimozone/pg_tileserv
-      run: |
-        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-        docker push $DOCKER_REPO
+      - name: Get short SHA
+        id: slug
+        run: echo "::set-output name=sha7::$(echo ${GITHUB_SHA} | cut -c1-7)"
+
+      - name: Docker Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: dimozone/pg_tileserv:${{ steps.slug.outputs.sha7 }}, dimozone/pg_tileserv:latest
+
+      - name: Update Image Version in the related HelmChart values.yaml
+        uses: fjogeleit/yaml-update-action@master
+        with:
+          valueFile: 'charts/tileserv/values.yaml'
+          propertyPath: 'image.tag'
+          value: ${{ steps.slug.outputs.sha7 }}
+          branch: master
+          message: 'Update Image Version to ${{ steps.slug.outputs.sha7 }}'

@@ -1,6 +1,6 @@
 
 APPVERSION := latest
-GOVERSION := 1.15
+GOVERSION := 1.16
 PROGRAM := pg_tileserv
 CONFIG := config/$(PROGRAM).toml
 CONTAINER := dimozone/$(PROGRAM)

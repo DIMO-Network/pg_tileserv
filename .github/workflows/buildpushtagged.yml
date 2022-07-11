@@ -1,0 +1,36 @@
+name: buildpushprod
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  deploy_prod:
+    # The type of runner that the job will run on
+    name: deploy
+    runs-on: self-hosted
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+      # leaving this here, as ideally we tag the latest image with the git version tag
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: get last image tag
+        id: tag
+        uses: CumulusDS/get-yaml-paths-action@v0.1.0
+        with:
+          file: charts/tileserv/values.yaml
+          buildtag: image.tag
+
+      - name: Update Image Version in the related HelmChart values.yaml
+        uses: fjogeleit/yaml-update-action@master
+        with:
+          valueFile: 'charts/tileserv/values-prod.yaml'
+          propertyPath: 'image.tag'
+          value: ${{steps.tag.outputs.buildtag}}
+          branch: master
+          message: 'Update Image Version to ${{steps.tag.outputs.buildtag}}'
