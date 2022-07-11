@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: dimozone/pg_tileserv
   pullPolicy: Always
-  tag: latest
+  tag: ad19cbc
 env:
   ENVIRONMENT: prod
   PORT: '8080'
