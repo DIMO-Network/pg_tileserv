@@ -1,0 +1,49 @@
+{{- if .Values.cronJob.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "tileserv.fullname" . }}-load-dd
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tileserv.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.cronJob.schedule | quote}}
+  concurrencyPolicy: "Forbid"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+          {{- with .Values.podAnnotations }}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          labels:
+            {{- include "tileserv.selectorLabels" . | nindent 12 }}
+        spec:
+          initContainers:
+          - name: edmunds-vehicles-sync
+            securityContext:
+              {{- toYaml .Values.securityContext | nindent 14 }}
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+            command: ['sh', '-c', "/tileserv edmunds-vehicles-sync"]
+            envFrom:
+            - configMapRef:
+                name: {{ include "tileserv.fullname" . }}-config
+            - secretRef:
+                name: {{ include "tileserv.fullname" . }}-secret
+          - name: search-sync-dds
+            securityContext:
+              {{- toYaml .Values.securityContext | nindent 14 }}
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+            command: ['sh', '-c', "/tileserv search-sync-dds"]
+            envFrom:
+            - configMapRef:
+                name: {{ include "tileserv.fullname" . }}-config
+            - secretRef:
+                name: {{ include "tileserv.fullname" . }}-secret
+          containers:
+          - name: completed
+            image: busybox
+            command: ['sh', '-c', 'echo "edmunds-vehicles-sync and search-sync-dds completed"']
+          restartPolicy: OnFailure
+{{ end }}          
