@@ -51,7 +51,7 @@ ingress:
     nginx.ingress.kubernetes.io/auth-tls-verify-client: 'on'
     nginx.ingress.kubernetes.io/enable-cors: 'true'
     nginx.ingress.kubernetes.io/cors-allow-origin: '*'
-    nginx.ingress.kubernetes.io/limit-rps: '3'
+    nginx.ingress.kubernetes.io/limit-rps: '20'
     external-dns.alpha.kubernetes.io/hostname: tileserv.dev.dimo.zone
   hosts:
     - host: tileserv.dev.dimo.zone
