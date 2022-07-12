@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: dimozone/pg_tileserv
   pullPolicy: Always
-  tag: ad19cbc
+  tag: 9434dc5
 imagePullSecrets: []
 nameOverride: ''
 fullnameOverride: ''
